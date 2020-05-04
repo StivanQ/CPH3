@@ -44,45 +44,47 @@ char *compute_post_request(char *host, char *url, char* content_type, char **bod
     char *message = calloc(BUFLEN, sizeof(char));
     char *line = calloc(LINELEN, sizeof(char));
     char *body_data_buffer = calloc(LINELEN, sizeof(char));
-
+    char *header = calloc(LINELEN, sizeof(char));
     // Step 1: write the method name, URL and protocol type
     sprintf(line, "POST %s HTTP/1.1", url);
-    compute_message(message, line);
+    compute_message(header, line);
     
     // Step 2: add the host
     sprintf(line, "Host: %s", host);
-    compute_message(message,line);
+    compute_message(header,line);
 
     /* Step 3: add necessary headers (Content-Type and Content-Length are mandatory)
             in order to write Content-Length you must first compute the message size
     */
     sprintf(line, "Content-Type: %s", content_type);
-    compute_message(message,line);
-
+    compute_message(header,line);
     int len = 0;
     int i;
-    // printf("[%s]\n", body_data[0]);
     for(i = 0; i < body_data_fields_count; i++) {
         len += strlen(body_data[i]);
     }
 
-    sprintf(line, "Content-Length: %d", len);
-    compute_message(message,line);
-    // compute_message(message, "");
-
-    // printf("lungime[%d]\n", len);
-
+    // construim body_message si numaram cate '\r' am pus in plus
     for(i = 0; i < body_data_fields_count; i++) {
-        strcat(body_data_buffer, body_data[i]);
+        // char* ptr = strtok(body_data[i], "\n");
+        // while(ptr != NULL) {
+        //     compute_message(body_data_buffer, ptr);
+        //     ptr = strtok(NULL, "\n");
+        //     // len--;
+        // }
+        compute_message(body_data_buffer, body_data[i]);
     }
-    // compute_message(message, body_data_buffer); 
+
+    sprintf(line, "Content-Length: %d", len);
+    compute_message(header,line);
 
     // Step 4 (optional): add cookies
     if (cookies != NULL) {
        
     }
     // Step 5: add new line at end of header
-
+    compute_message(message, header);
+    // compute_message(message, "");
     // Step 6: add the actual payload data
     memset(line, 0, LINELEN);
     compute_message(message, body_data_buffer);
