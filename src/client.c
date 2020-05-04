@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
     char *response;
     char username[100];
     char password[100];
+    char cookie[LINELEN];
     char login_cookie[LINELEN];
     int sockfd;
 
@@ -34,10 +35,10 @@ int main(int argc, char *argv[])
             // register boss
             printf("username=");
             scanf("%s", username);
-            // printf("%s\n", username);
+            printf("[%s]\n", username);
             printf("password=");
             scanf("%s", password);
-            // printf("%s\n", password);
+            printf("[%s]\n", password);
 
             register_user(username, password, sockfd, REGISTER);
 
@@ -58,12 +59,17 @@ int main(int argc, char *argv[])
             // login boss
         } else {
             // comanda nu e buna
+            continue;
         }
 
 
-        response = receive_from_server(sockfd);
-        printf("[%s]\n", response);
-
+        // response = receive_from_server(sockfd);
+        // printf("[%s]\n", response);
+        response = parse_resonse(sockfd);
+        if(response != NULL) {
+            strcpy(cookie, response);
+            printf("cookie[%s]\n", cookie);
+        }
         free(read_buffer);
     }
 
@@ -91,12 +97,40 @@ void register_user(char* username, char* password, int sockfd, int code) {
                                     0);
 
     send_to_server(sockfd, message);
-
     json_free_serialized_string(serialized_string);
     json_value_free(root_value);
 }
 
-void parse_resonse(int sockfd) {
+void enter_library(char* username, char* password, int sockfd) {
+    JSON_Value *root_value = json_value_init_object();
+    JSON_Object *root_object = json_value_get_object(root_value);
+    char *serialized_string = NULL;
+    json_object_set_string(root_object, "username", username);
+    json_object_set_string(root_object, "password", password);
+    serialized_string = json_serialize_to_string_pretty(root_value);
+
+    char* message;
+}
+
+char* parse_resonse(int sockfd) {
     char* response;
     response = receive_from_server(sockfd);
+
+    char* ptr = strtok(response, "\r\n");
+    char* cookie_ptr;
+    char* cookie = NULL;
+    while(ptr != NULL) {
+        printf("%s\n", ptr);
+        if((cookie_ptr = strstr(ptr, "connect.sid")) != NULL) {
+            cookie_ptr += 12;
+            break;
+        }
+        ptr = strtok(NULL, "\n");
+    }
+    if(cookie_ptr != NULL) {
+        cookie = strtok(cookie_ptr, " ");
+        cookie[strlen(cookie) - 1] = '\0';
+        printf("cookie=[%s]\n", cookie);
+    }
+    return cookie;
 }

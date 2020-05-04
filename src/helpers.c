@@ -63,6 +63,7 @@ void send_to_server(int sockfd, char *message)
         }
 
         if (bytes == 0) {
+            printf("break[3]\n");
             break;
         }
 
@@ -85,6 +86,7 @@ char *receive_from_server(int sockfd)
         }
 
         if (bytes == 0) {
+            printf("inseamna ca o oprit conexiuneafratelemeleu[1]\n");
             break;
         }
 
@@ -116,6 +118,7 @@ char *receive_from_server(int sockfd)
         }
 
         if (bytes == 0) {
+            printf("break[2]\n");
             break;
         }
 

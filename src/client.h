@@ -14,4 +14,7 @@
 // registers the user to the server
 void register_user(char* username, char* password, int sockfd, int code);
 
-void parse_resonse(int sockfd);
+// parses the response from the server
+char* parse_resonse(int sockfd);
+
+void enter_library(char* username, char* password, int sockfd);

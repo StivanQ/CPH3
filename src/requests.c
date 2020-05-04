@@ -66,12 +66,6 @@ char *compute_post_request(char *host, char *url, char* content_type, char **bod
 
     // construim body_message si numaram cate '\r' am pus in plus
     for(i = 0; i < body_data_fields_count; i++) {
-        // char* ptr = strtok(body_data[i], "\n");
-        // while(ptr != NULL) {
-        //     compute_message(body_data_buffer, ptr);
-        //     ptr = strtok(NULL, "\n");
-        //     // len--;
-        // }
         compute_message(body_data_buffer, body_data[i]);
     }
 
