@@ -13,6 +13,7 @@
 #define HEADER_TERMINATOR_SIZE (sizeof(HEADER_TERMINATOR) - 1)
 #define CONTENT_LENGTH "Content-Length: "
 #define CONTENT_LENGTH_SIZE (sizeof(CONTENT_LENGTH) - 1)
+extern int connected;
 
 void error(const char *msg)
 {
@@ -63,7 +64,6 @@ void send_to_server(int sockfd, char *message)
         }
 
         if (bytes == 0) {
-            printf("break[3]\n");
             break;
         }
 
@@ -86,7 +86,7 @@ char *receive_from_server(int sockfd)
         }
 
         if (bytes == 0) {
-            printf("inseamna ca o oprit conexiuneafratelemeleu[1]\n");
+            connected = 0;
             break;
         }
 
@@ -118,7 +118,6 @@ char *receive_from_server(int sockfd)
         }
 
         if (bytes == 0) {
-            printf("break[2]\n");
             break;
         }
 
