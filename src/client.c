@@ -1,6 +1,9 @@
 #include "client.h"
 
 int connected = 0;
+char last_message[BUFLEN];
+int last_message_type;
+int last_message_waiting = 0;
 
 int main(int argc, char *argv[])
 {
@@ -11,24 +14,41 @@ int main(int argc, char *argv[])
     char *token = calloc(LINELEN, sizeof(char));
     int sockfd;
     int err;
-
-    sockfd = open_connection(IP, PORT, AF_INET, SOCK_STREAM, 0);
-    connected = 1;
     char* read_buffer;
 
     while(1) {
-        if(connected == 0) {
-            printf("Nu esti conectat la server.\nTasteaza \"connect\".\n");
-        }
         read_buffer = calloc(LINELEN, sizeof(char));
-        scanf("%s", read_buffer);
 
-        if(connected == 0 && 
-            strcmp(read_buffer, "connect") != 0 &&
-            strcmp(read_buffer, "exit") != 0) {
+        
+        if(connected == 0) {
+            sockfd = open_connection(IP, PORT, AF_INET, SOCK_STREAM, 0);
+            connected = 1;
+
+            if(last_message_waiting == 1) {
+	            send_to_server(sockfd, last_message);
+
+	            if(last_message_type == LOGIN) {
+	            	response = parse_resonse(sockfd);
+		            if(response != NULL) {
+		                strcpy(cookie, response);
+		            }
+	            } else if (last_message_type == ENTER_LIBRARY) {
+					response = parse_resonse_enter_library(sockfd);
+            		if(response != NULL) {
+		                strcpy(token, response);
+		                free(response);
+		            }
+	            } else {
+					parse_resonse_generic(sockfd);
+	            }
+	            last_message_waiting = 0;
+        	}
             free(read_buffer);
             continue;
         }
+
+
+        scanf("%s", read_buffer);
 
         if(strcmp(read_buffer, "exit") == 0) {
             close(sockfd);
@@ -75,11 +95,6 @@ int main(int argc, char *argv[])
             logout(cookie, sockfd);
             memset(token, 0, strlen(token));
             parse_resonse_generic(sockfd);
-        } else if (strcmp(read_buffer, "connect") == 0) {
-            sockfd = open_connection(IP, PORT, AF_INET, SOCK_STREAM, 0);
-            connected = 1;
-            free(read_buffer);
-            continue;
         } else {
             printf("Nu se recunoaste comanda introdusa.\n");
             free(read_buffer);
@@ -111,7 +126,9 @@ void register_user(char* username, char* password, int sockfd, int code) {
                                     1, 
                                     NULL, 
                                     0);
-
+    strcpy(last_message, message);
+    last_message_type = REGISTER;
+    last_message_waiting = 1;
     send_to_server(sockfd, message);
     free(message);
     json_free_serialized_string(serialized_string);
@@ -128,7 +145,9 @@ void enter_library(char* cookie, int sockfd) {
                                     NULL,
                                     &(cookieBun),
                                     1);
-
+    strcpy(last_message, message);
+    last_message_type = ENTER_LIBRARY;
+    last_message_waiting = 1;
     send_to_server(sockfd, message);
     free(cookieBun);
     free(message);
@@ -145,7 +164,9 @@ void get_books(char* token, int sockfd) {
                                     NULL,
                                     &(tokenHeader),
                                     1);
-
+    strcpy(last_message, message);
+    last_message_type = GENERIC;
+    last_message_waiting = 1;
     send_to_server(sockfd, message);
     free(tokenHeader);
     free(message);
@@ -219,7 +240,9 @@ int add_book(char* token, int sockfd) {
                                 1, 
                                 &tokenHeader, 
                                 1);
-
+    strcpy(last_message, message);
+    last_message_type = GENERIC;
+    last_message_waiting = 1;
     send_to_server(sockfd, message);
     json_free_serialized_string(serialized_string);
     json_value_free(root_value);
@@ -234,14 +257,11 @@ char* parse_resonse_enter_library(int sockfd) {
     response = receive_from_server(sockfd);
 
     strcpy(aux, response);
-    free(response);
 
     printf("%s\n", aux);
-    if(strstr(aux, "401") != NULL) {
+    if(strstr(aux, "401 Unauthorized") != NULL) {
         return NULL;
     }
-
-
 
     char* ptr = strtok(aux, "\r\n");
     char* ptr_prim = NULL;
@@ -250,13 +270,17 @@ char* parse_resonse_enter_library(int sockfd) {
         ptr = strtok(NULL, "\n");
     }
 
+    char* intermediar = calloc(500, sizeof(char));
+
     if(ptr_prim != NULL) {
         JSON_Value* token_json = json_parse_string(ptr_prim);
         JSON_Object* root_object = json_value_get_object(token_json);
         response = json_object_get_string(root_object, "token");
+        strcpy(intermediar, response);
         json_value_free(token_json);
     }
-    return response;
+
+    return intermediar;
 }
 
 void logout(char* cookie, int sockfd) {
@@ -270,10 +294,9 @@ void logout(char* cookie, int sockfd) {
                                     NULL,
                                     &(cookieBun),
                                     1);
-
-    printf("<<<[%s]>>>\n", message);
-    free(message);
-
+    strcpy(last_message, message);
+    last_message_type = GENERIC;
+    last_message_waiting = 1;
     send_to_server(sockfd, message);
     free(message);
     free(cookieBun);
@@ -299,7 +322,9 @@ int get_book(char* token, int sockfd) {
                                     NULL,
                                     &(tokenHeader),
                                     1);
-
+    strcpy(last_message, message);
+    last_message_type = GENERIC;
+    last_message_waiting = 1;
     send_to_server(sockfd, message);
     free(message);
     free(tokenHeader);
@@ -327,7 +352,9 @@ int delete_book(char* token, int sockfd) {
                                     &(tokenHeader),
                                     1);
 
-
+    strcpy(last_message, message);
+    last_message_waiting = 1;
+    last_message_type = GENERIC;
     send_to_server(sockfd, message);
     free(message);
     free(tokenHeader);

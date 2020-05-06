@@ -11,26 +11,27 @@ easy-to-use, m-a ajutat aceata librarie in efectuarea temei.
 	Programul este implementat deaspura scheletului de laborator10.
 
 	Programul client se conecteaza initial la server si asteapta intr-un
-loop comenzi de la tastatura: cele din enuntul temei + comanda "connect" care
-reface conexiunea la server. In caz ca nu se recunoase comanda introdusa se
-afiseaza un mesaj de erare. Daca la citirea campurilor de tip se introduce
+loop comenzi de la tastatura. In caz ca nu se recunoase comanda introdusa se
+afiseaza un mesaj de erare. Daca la citirea campurilor de tip int se introduce
 altceva decat un numar pozitiv se afiseaza un mesaj de eroare si trebuie
 rulata comanda de la capat.
 
+	In loop-ul programului de fiecare data cand se afla ca nu avem conexiune cu
+serverul refacem conexiunea automat. de fiecare data cand se reface conexiunea
+se retransmite mesajul care a fost incercat sa fie transmis ultima oara, dar nu
+a fost primit de catre server pentru ca noi nu stiam ca el a inchis conexiunea
+intre timp. Clientul nu stie cand se reface conexiunea si nici nu il
+intereseaza. Intr-o versiune anterioara conexiunea trebuia refacuta manual
+cu o comanda "connect", dar am realizat ca si client la testare ca nu clientul
+are trebui sa se ocupe de asa ceva.
+
 	In functie de comanda introdusa:
-		1) se verifica daca se poate efectua comanda in conditiile date
-		   ex: daca nu suntem conectati la server nu putem decat sa introducem
-		   comanda "connect" sau "exit". Introducerea unei alte comenzi poate
-		   duce la iesirea din program cu un cod de erare "urat" (SIGSEGV/ 
-		   broken pipe). Astfel nu este permisa introduceea niciunei comenzi 
-		   (alta decat cele 2 mentionate anterior) daca nu avem conexiune cu
-		   serverul.
-		2) se afiseaza promptul pentru citire de la tastatura a informatiilor
-		   necesare / sau nimic
-		3) se construieste mesajul care trebuie trimis la server cu cele 3
+		1) se afiseaza promptul pentru citire de la tastatura a informatiilor
+		   necesare / sau nimic in cazul comenzilor care nu necesita asa ceva
+		2) se construieste mesajul care trebuie trimis la server cu cele 3
 		   functii: compute_<get/post/delete>_request
-		4) este trimis mesajul catre server
-		5) se parseaza in fuctie de comanda trimisa raspunsul primit de la
+		3) este trimis mesajul catre server
+		4) se parseaza in fuctie de comanda trimisa raspunsul primit de la
 		   server (afisare + extragere de cookie/JWT dupa caz)
 
 	Feedback: Tema ok, usoara. Introducere in REST API. Nice. 

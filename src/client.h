@@ -21,6 +21,8 @@
 #define LOGOUT_PATH "/api/v1/tema/auth/logout"
 #define REGISTER 35
 #define LOGIN 51
+#define ENTER_LIBRARY 430
+#define GENERIC 999
 
 
 // registers the user to the server
