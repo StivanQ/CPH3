@@ -197,21 +197,41 @@ char* parse_resonse(int sockfd) {
 }
 
 int add_book(char* token, int sockfd) {
-    char title[100];
-    char author[100];
-    char genre[100];
-    char publisher[100];
     char page_count[100];
+
+    char *title = NULL;
+    char *author = NULL;
+    char *genre = NULL;
+    char *publisher = NULL;
+
+    size_t len = 0;
+
+    getchar();
     printf("title=");
-    scanf("%s", title);
+    getline(&title, &len, stdin);
+    len = 0;
+
     printf("author=");
-    scanf("%s", author);
+    getline(&author, &len, stdin);
+    len = 0;
+
     printf("genre=");
-    scanf("%s", genre);
+    getline(&genre, &len, stdin);
+    len = 0;
+
     printf("publisher=");
-    scanf("%s", publisher);
+    getline(&publisher, &len, stdin);
+    len = 0;
+
     printf("page_count=");
     scanf("%s", page_count);
+
+    // getline citeste si '\n' si il pune in string si nu vrem sa il avem
+    title[strlen(title) - 1] = '\0';
+    author[strlen(author) - 1] = '\0';
+    publisher[strlen(publisher) - 1] = '\0';
+    genre[strlen(genre) - 1] = '\0';
+
     int page_count_integer = 0;
     if(check_for_int(page_count, &page_count_integer) == -1) {
         printf("Nu ai introdus un numar pozitiv.\nIntrodu comanda din nou\n");
@@ -248,6 +268,13 @@ int add_book(char* token, int sockfd) {
     json_value_free(root_value);
     free(message);
     free(tokenHeader);
+
+    free(title);
+    free(author);
+    free(publisher);
+    free(genre);
+    // free(page_count);
+
     return 0;
 }
 
